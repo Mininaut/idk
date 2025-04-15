@@ -4,8 +4,8 @@ self.addEventListener('activate', event => {
 });
 
 const ONE_PB = 1024n * 1024n * 1024n * 1024n * 1024n;  
-const FILE_SIZE = 1n * ONE_PB;  
-const CHUNK_SIZE = 64n * 1024n;    
+const FILE_SIZE = 72n * ONE_PB;  
+const CHUNK_SIZE = 64n * 1024n;  
 self.addEventListener('fetch', event => {
   const url = new URL(event.request.url);
   if (url.pathname.endsWith('files.zip')) {
@@ -39,7 +39,7 @@ function createBigFileResponse() {
     headers: {
       'Content-Type': 'application/octet-stream',
       'Content-Disposition': 'attachment; filename="files.zip"',
-      'Content-Length': FILE_SIZE.toString()
+      'X-File-Size': FILE_SIZE.toString()
     }
   });
 }
