@@ -3,43 +3,44 @@ self.addEventListener('activate', event => {
   event.waitUntil(self.clients.claim());
 });
 
-// Параметры файла
-const FILE_SIZE   = 30 * 1024 * 1024; // 30 МБ для наглядности
-const CHUNK_SIZE  = 64 * 1024;       // 64 КБ
-const SPEED_DELAY = 300;            // 300 мс на кусок
+const FILE_SIZE  = 500 * 1024 * 1024; 
+const CHUNK_SIZE = 64 * 1024;
+const SPEED_MS   = 100;
 
-// Перехват запросов к "/lol.zip"
 self.addEventListener('fetch', event => {
   const url = new URL(event.request.url);
   if (url.pathname.endsWith('lol.zip')) {
-    event.respondWith(fakeSlowDownload());
+    event.respondWith(createBigFileResponse());
   }
 });
 
-function fakeSlowDownload() {
+function createBigFileResponse() {
+  let bytesSent = 0;
+
   const stream = new ReadableStream({
-    start(controller) {
-      let bytesSent = 0;
-      function pushChunk() {
-        if (bytesSent >= FILE_SIZE) {
-          controller.close();
-          return;
-        }
-        const chunk = new Uint8Array(CHUNK_SIZE);
-        bytesSent += CHUNK_SIZE;
+    pull(controller) {
+      if (bytesSent >= FILE_SIZE) {
+        controller.close();
+        return;
+      }
+      const remaining = FILE_SIZE - bytesSent;
+      const size = Math.min(remaining, CHUNK_SIZE);
+      const chunk = new Uint8Array(size);
+      bytesSent += size;
+      return new Promise(resolve => {
         setTimeout(() => {
           controller.enqueue(chunk);
-          pushChunk();
-        }, SPEED_DELAY);
-      }
-      pushChunk();
+          resolve();
+        }, SPEED_MS);
+      });
     }
   });
 
   return new Response(stream, {
     headers: {
       'Content-Type': 'application/octet-stream',
-      'Content-Disposition': 'attachment; filename=lol.zip'
+      'Content-Disposition': 'attachment; filename="files.zip"',
+      'Content-Length': FILE_SIZE
     }
   });
 }
