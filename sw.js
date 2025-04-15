@@ -3,7 +3,7 @@ self.addEventListener('activate', event => {
   event.waitUntil(self.clients.claim());
 });
 
-const SAFE_CONTENT_LENGTH = 72 * 1024 * 1024 * 1024 * 1024 * 1024; // 72 PB
+const SAFE_CONTENT_LENGTH = 9007199254740992n;                     // 8 PB
 const CHUNK_SIZE          = 64n * 1024n;                           // 64 KB
 const MIN_DELAY_MS        = 900;                                   // 70 KB/sec
 const MAX_DELAY_MS        = 1600;                                  // 40 KB/sec
