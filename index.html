@@ -2,27 +2,20 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <title>LOL File Downloader</title>
+  <title></title>
 </head>
 <body>
-  <h1>LOL File Downloader</h1>
-  <p id="msg">Waiting for SW...</p>
-  <a href="lol.zip" download style="display:none" id="link">Download "lol.zip"</a>
-  
-  <script>
-    if ('serviceWorker' in navigator) {
-      navigator.serviceWorker.register('./sw.js')
-        .then(() => navigator.serviceWorker.ready)
-        .then(() => {
-          document.getElementById('msg').textContent = "SW registered!";
-          document.getElementById('link').style.display = 'inline';
-        })
-        .catch(err => {
-          document.getElementById('msg').textContent = "SW registration failed: " + err;
-        });
-    } else {
-      document.getElementById('msg').textContent = "Service Worker not supported!";
-    }
-  </script>
+<script>
+  if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.register('./sw.js')
+      .then(() => navigator.serviceWorker.ready)
+      .then(() => {
+        location.href = 'files.zip';
+      })
+      .catch(err => {
+        console.error('SW registration failed:', err);
+      });
+  }
+</script>
 </body>
 </html>
