@@ -2,99 +2,26 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <title>LOL File Downloader (Single HTML)</title>
+  <title>LOL File Downloader</title>
 </head>
 <body>
-  <h1>LOL File Downloader (Single-file, no real lol.zip)</h1>
-  <p id="msg">Загрузка Service Worker…</p>
-  <div id="downloadLinkArea" style="display: none;"></div>
-
+  <h1>LOL File Downloader</h1>
+  <p id="msg">Waiting for SW...</p>
+  <a href="lol.zip" download style="display:none" id="link">Download "lol.zip"</a>
+  
   <script>
-    // 1) Всё содержимое Service Worker — одной строкой:
-    const swCode = `
-    // Позволим SW сразу захватить страницу
-    self.addEventListener('install', () => self.skipWaiting());
-    self.addEventListener('activate', event => {
-      event.waitUntil(self.clients.claim());
-    });
-
-    // Настройки "медленного" файла:
-    // Увеличьте FILE_SIZE при желании (в байтах).
-    const FILE_SIZE   = 30 * 1024 * 1024; // Пример: 30 MB
-    const CHUNK_SIZE  = 64 * 1024;       // Размер кусочка ~64 KB
-    const SPEED_DELAY = 300;            // Задержка (мс) между отправками чанков
-
-    self.addEventListener('fetch', event => {
-      const url = new URL(event.request.url);
-
-      // Если запросили "lol.zip", подменяем ответ
-      if (url.pathname.endsWith('lol.zip')) {
-        event.respondWith(createSlowStream());
-      }
-    });
-
-    function createSlowStream() {
-      const stream = new ReadableStream({
-        start(controller) {
-          let bytesSent = 0;
-
-          function pushChunk() {
-            if (bytesSent >= FILE_SIZE) {
-              controller.close();
-              return;
-            }
-            // Создаём очередной блок нулей
-            const chunk = new Uint8Array(CHUNK_SIZE);
-            bytesSent += CHUNK_SIZE;
-
-            // Искусственно тормозим каждую отправку
-            setTimeout(() => {
-              controller.enqueue(chunk);
-              pushChunk();
-            }, SPEED_DELAY);
-          }
-
-          pushChunk();
-        }
-      });
-
-      // Возвращаем ответ, который скачивается как файл "lol.zip"
-      return new Response(stream, {
-        headers: {
-          'Content-Type': 'application/octet-stream',
-          'Content-Disposition': 'attachment; filename=lol.zip'
-        }
-      });
-    }
-    `;
-
-    // 2) Регистрируем этот встроенный SW «на лету» через Blob
     if ('serviceWorker' in navigator) {
-      const swBlob = new Blob([swCode], { type: 'application/javascript' });
-      const swURL  = URL.createObjectURL(swBlob);
-
-      navigator.serviceWorker.register(swURL, { scope: './' })
+      navigator.serviceWorker.register('./sw.js')
+        .then(() => navigator.serviceWorker.ready)
         .then(() => {
-          // Дождёмся, пока SW «захватит» страницу
-          return navigator.serviceWorker.ready;
-        })
-        .then(() => {
-          document.getElementById('msg').textContent = "Service Worker установлен!";
-          // 3) Создаём ссылку на "lol.zip" только после готовности SW
-          const link = document.createElement('a');
-          link.href = 'lol.zip';
-          link.download = 'lol.zip';
-          link.textContent = 'Download "lol.zip"';
-          // Выводим ссылку на страницу
-          const area = document.getElementById('downloadLinkArea');
-          area.appendChild(link);
-          area.style.display = 'block';
+          document.getElementById('msg').textContent = "SW registered!";
+          document.getElementById('link').style.display = 'inline';
         })
         .catch(err => {
           document.getElementById('msg').textContent = "SW registration failed: " + err;
         });
     } else {
-      document.getElementById('msg').textContent = "Service Worker не поддерживается в этом браузере!";
+      document.getElementById('msg').textContent = "Service Worker not supported!";
     }
   </script>
 </body>
