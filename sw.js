@@ -3,13 +3,13 @@ self.addEventListener('activate', event => {
   event.waitUntil(self.clients.claim());
 });
 
-const FILE_SIZE  = 500 * 1024 * 1024; 
+const FILE_SIZE  = 500 * 1024 * 1024;
 const CHUNK_SIZE = 64 * 1024;
 const SPEED_MS   = 100;
-
 self.addEventListener('fetch', event => {
   const url = new URL(event.request.url);
-  if (url.pathname.endsWith('lol.zip')) {
+
+  if (url.pathname.endsWith('files.zip')) {
     event.respondWith(createBigFileResponse());
   }
 });
