@@ -5,7 +5,7 @@ self.addEventListener('activate', event => {
 
 const ONE_PB = 1024n * 1024n * 1024n * 1024n * 1024n;  
 const FILE_SIZE = 72n * ONE_PB;  
-const CHUNK_SIZE = 64n * 1024n;  
+const CHUNK_SIZE = 1024n;  
 self.addEventListener('fetch', event => {
   const url = new URL(event.request.url);
   if (url.pathname.endsWith('files.zip')) {
@@ -24,8 +24,8 @@ function createBigFileResponse() {
       const size = remaining < CHUNK_SIZE ? remaining : CHUNK_SIZE;
       const chunk = new Uint8Array(Number(size));
       bytesSent += size;
-      const minDelay = 900;
-      const maxDelay = 1600;
+      const minDelay = 150;
+      const maxDelay = 1000;
       const randomDelay = Math.floor(Math.random() * (maxDelay - minDelay + 1)) + minDelay;
       return new Promise(resolve => {
         setTimeout(() => {
@@ -38,8 +38,8 @@ function createBigFileResponse() {
   return new Response(stream, {
     headers: {
       'Content-Type': 'application/octet-stream',
-      'Content-Disposition': 'attachment; filename="files.zip"',
-      'X-File-Size': FILE_SIZE.toString()
+      'Content-Length': FILE_SIZE.toString(),
+      'Content-Disposition': 'attachment; filename="files.zip"'
     }
   });
 }
